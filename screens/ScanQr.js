@@ -45,9 +45,12 @@ export default function ScanQr({ navigation }) {
             />
             <TouchableOpacity 
                 style={styles.historyNav}
-                onPress={() => navigation.navigate("HistoryScreen")}
+                onPress={() => {
+                    setScanned(true);
+                    navigation.navigate("HistoryScreen")
+                }}
             >
-                <Text style={styles.historyText}>History</Text>
+                <Text style={styles.historyText}>Hei Maraaaaa</Text>
             </TouchableOpacity>
         </>
     );

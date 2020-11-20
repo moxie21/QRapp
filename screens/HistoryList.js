@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 const HISTORY_LIST = [
@@ -49,7 +49,7 @@ const HISTORY_LIST = [
     },
 ];
 
-export default function HistoryList() {
+export default function HistoryList({ navigation }) {
     const intialData = HISTORY_LIST;
     const [filteredData, setFilteredData] = useState(HISTORY_LIST);
     const [searchValue, setSearchValue] = useState('');
@@ -70,13 +70,18 @@ export default function HistoryList() {
 
             <ScrollView 
                 style={styles.scrollView} 
-                contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}
+                contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
             >
                 {filteredData.map(val => (
-                    <View style={styles.row}>
+                    <TouchableOpacity
+                        style={styles.row}
+                        onPress={() => console.log(navigation.navigate('ViewQrHistoryScreen', { data: val.name }))}
+                    >
                         <QRCode size={50} value={val.name} />
-                        <Text style={styles.rowText} key={val.id}>{val.name}</Text>
-                    </View>
+                        <View style={styles.textWrapper}>
+                            <Text style={styles.rowText} key={val.id}>{val.name}</Text>
+                        </View>
+                    </TouchableOpacity>
                 ))}
             </ScrollView>
         </View>
@@ -93,8 +98,10 @@ const styles = StyleSheet.create({
     textInput: {
         width: '80%',
         height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
+        backgroundColor: '#fff',
+        borderRadius: 50,
+        paddingHorizontal: 20,
+        marginVertical: 20
     },
     scrollView: {
         flex: 1,
@@ -105,15 +112,19 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '90%',
-        paddingHorizontal: 20,
         height: 100,
+        paddingHorizontal: 20,
         backgroundColor: '#fff',
         borderRadius: 10,
-        marginBottom: 15
+        marginVertical: 10,
+    },
+    textWrapper: {
+        marginRight: 20
     },
     rowText: {
         color: '#9A9A9A',
         fontSize: 15,
-        paddingLeft: 20
+        marginLeft: 20,
+        marginRight: 20
     },
 });

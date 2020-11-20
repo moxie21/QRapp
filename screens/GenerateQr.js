@@ -3,7 +3,6 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 export default function GenerateQr({ scannedData }) {
-    console.log(scannedData)
     const [value, setValue] = useState(scannedData.data);
 
 	return (

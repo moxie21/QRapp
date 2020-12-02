@@ -76,6 +76,7 @@ export default function HistoryList({ navigation }) {
                     <TouchableOpacity
                         style={styles.row}
                         onPress={() => console.log(navigation.navigate('ViewQrHistoryScreen', { data: val.name }))}
+                        key={val.key}
                     >
                         <QRCode size={50} value={val.name} />
                         <View style={styles.textWrapper}>
@@ -94,6 +95,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F2F2F2',
         alignItems: 'center',
         justifyContent: 'center',
+        marginTop: 40
     },
     textInput: {
         width: '80%',

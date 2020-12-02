@@ -39,6 +39,7 @@ export default function ScanQr({ navigation }) {
 
     return (
         <>
+            {console.log(scanned ? "PUTEM" : "NU PUTEM")}
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
@@ -50,7 +51,7 @@ export default function ScanQr({ navigation }) {
                     navigation.navigate("HistoryScreen")
                 }}
             >
-                <Text style={styles.historyText}>Hei Maraaaaa</Text>
+                <Text style={styles.historyText}>History</Text>
             </TouchableOpacity>
         </>
     );
@@ -65,6 +66,7 @@ const styles = StyleSheet.create({
     },
     historyText: {
         color: '#fff',
-        fontSize: 20
+        fontSize: 20,
+        alignContent: 'center'
     }
 });

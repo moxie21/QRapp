@@ -1,92 +1,62 @@
-// import React from 'react';
-// import { StatusBar } from 'expo-status-bar';
-// import 'react-native-gesture-handler';
-// import { StyleSheet, View } from 'react-native';
-// import GenerateQr from './screens/GenerateQr';
-// import ScanQr from './screens/ScanQr';
-// import HistoryList from './screens/HistoryList';
-// import ViewQrHistory from './screens/ViewQrHistory';
-// import { NavigationContainer } from '@react-navigation/native';
-// import { createStackNavigator } from '@react-navigation/stack';
-
-// const ScanScreen = ({ navigation }) => <ScanQr navigation={navigation} />
-// const GenerateScreen = ({ route }) => <GenerateQr scannedData={route.params}  />
-// const HistoryScreen = ({ navigation }) => <HistoryList navigation={navigation} />
-// const ViewQrHistoryScreen = ({ navigation, route }) => <ViewQrHistory navigation={navigation} data={route.params.data} />
-
-// const Stack = createStackNavigator();
-
-// export default function App() {
-// 	return (
-// 		<NavigationContainer>
-// 			<Stack.Navigator>
-// 				<Stack.Screen name="ScanScreen" component={ScanScreen} />
-// 				<Stack.Screen name="GenerateScreen">
-// 					{props => <GenerateScreen {...props} />}
-// 				</Stack.Screen>
-// 				<Stack.Screen name="HistoryScreen">
-// 					{props => <HistoryScreen {...props} />}
-// 				</Stack.Screen>
-// 				<Stack.Screen name="ViewQrHistoryScreen">
-// 					{props => <ViewQrHistoryScreen {...props} />}
-// 				</Stack.Screen>
-// 			</Stack.Navigator>
-// 		</NavigationContainer>
-// 	);
-// }
-
-// const styles = StyleSheet.create({
-// 	container: {
-// 		flex: 1,
-// 		backgroundColor: '#fff',
-// 		alignItems: 'center',
-// 		justifyContent: 'center',
-// 	},
-// });
-
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
-import ColorSwatch from './components/ColorSwatch';
+import { StatusBar } from 'expo-status-bar';
+import 'react-native-gesture-handler';
+import { StyleSheet, View } from 'react-native';
+import GenerateQr from './screens/GenerateQr';
+import ScanQr from './screens/ScanQr';
+import HistoryList from './screens/HistoryList';
+import ViewQrHistory from './screens/ViewQrHistory';
+import Register from './screens/Register';
+import Login from './screens/Login';
+import ForgotPassword from './screens/ForgotPassword';
+import Welcome from './screens/Welcome'
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Lato_400Regular, useFonts } from '@expo-google-fonts/lato';
+import { AppLoading } from 'expo';
+
+const WelcomeScreen = ({ navigation }) => <Welcome navigation={navigation} />
+const ScanScreen = ({ navigation }) => <ScanQr navigation={navigation} />
+const GenerateScreen = ({ route }) => <GenerateQr scannedData={route.params}  />
+const HistoryScreen = ({ navigation }) => <HistoryList navigation={navigation} />
+const ViewQrHistoryScreen = ({ navigation, route }) => <ViewQrHistory navigation={navigation} data={route.params.data} />
+const RegisterScreen = ({ navigation }) => <Register navigation={navigation} />
+const LoginScreen = ({ navigation }) => <Login navigation={navigation} />
+const ForgotPasswordScreen = ({ navigation }) => <ForgotPassword navigation={navigation} />
+const AppStack = createStackNavigator();
+// const AuthStack = createStackNavigator();
 
 export default function App() {
-	const [value, setValue] = useState('Hello');
-	const [qrColor, setQrColor] = useState('#000');
+	const [fontsLoaded] = useFonts({
+		Lato_400Regular
+	});
 
-	const onChangeQrColor = (c) => {
-		setQrColor(c);
-    };
+	if (!fontsLoaded) {
+		return <AppLoading />;
+	}
+	
+	// const [user, setUser] = useState(null);
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.generatedContent}>
-				<QRCode 
-					value={value.length >0 ? value :':('}
-					color={qrColor}
-				/>
-				<TextInput
-					onChangeText={text => setValue(text)}
-					value={value}
-				/>
-			</View>
-
-			<View style={styles.row} >
-				<ColorSwatch color='#CCD5FF' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#BAD1CD' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#F2D1C9' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#E086D3' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#8332AC' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#462749' changeColor={onChangeQrColor}/>
-			</View>
-			<View style={styles.row} >
-				<ColorSwatch color='#3CDBD3' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#23C9FF' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#7CC6FE' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#CCD5FF' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#E7BBE3' changeColor={onChangeQrColor}/>
-				<ColorSwatch color='#E7BBE3' changeColor={onChangeQrColor}/>
-			</View>
-		</View>
+		<NavigationContainer>
+			<AppStack.Navigator >
+				<AppStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown: false}}/>
+				<AppStack.Screen name="LoginScreen" component={LoginScreen} options={{headerShown: false}}/>
+				<AppStack.Screen name="RegisterScreen" component={RegisterScreen} options={{headerShown: false}}/>
+				<AppStack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{headerShown: false}}/>
+				<AppStack.Screen name="ScanScreen" component={ScanScreen} options={{headerShown: false}}/>
+				<AppStack.Screen name="GenerateScreen" options={{headerShown: false}}>
+					{props => <GenerateScreen {...props} />}
+				</AppStack.Screen>
+				<AppStack.Screen name="HistoryScreen" options={{headerShown: false}}>
+					{props => <HistoryScreen {...props} />}
+				</AppStack.Screen>
+				<AppStack.Screen name="ViewQrHistoryScreen" options={{headerShown: false}}>
+					{props => <ViewQrHistoryScreen {...props} />}
+				</AppStack.Screen>
+			</AppStack.Navigator >
+			{/* <StatusBar style='light'/> */}
+		</NavigationContainer>
 	);
 }
 
@@ -97,13 +67,46 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
-	generatedContent: {
-		marginBottom:100,
-		alignItems: 'center',
-	},
-	row: {
-		// flex: 1,
-		flexDirection: 'row',
-		justifyContent: 'space-around',
-	}
 });
+
+
+
+
+{/* // 	<NavigationContainer>
+// 	{ user ?
+// 	<AppStack.Navigator >
+// 		<AppStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown: false}}/>
+// 		<AppStack.Screen name="LoginScreen" component={LoginScreen} options={{headerShown: false}}/>
+// 		<AppStack.Screen name="RegisterScreen" component={RegisterScreen} options={{headerShown: false}}/>
+// 		<AppStack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{headerShown: false}}/>
+// 		<AppStack.Screen name="ScanScreen" component={ScanScreen} options={{headerShown: false}}/>
+// 		<AppStack.Screen name="GenerateScreen" options={{headerShown: false}}>
+// 			{props => <GenerateScreen {...props} />}
+// 		</AppStack.Screen>
+// 		<AppStack.Screen name="HistoryScreen" options={{headerShown: false}}>
+// 			{props => <HistoryScreen {...props} />}
+// 		</AppStack.Screen>
+// 		<AppStack.Screen name="ViewQrHistoryScreen" options={{headerShown: false}}>
+// 			{props => <ViewQrHistoryScreen {...props} />}
+// 		</AppStack.Screen>
+// 	</AppStack.Navigator >
+// 	:
+// 	<AuthStack.Navigator >
+// 		<AuthStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown: false}}/>
+// 		<AuthStack.Screen name="LoginScreen" component={LoginScreen} options={{headerShown: false}}/>
+// 		<AuthStack.Screen name="RegisterScreen" component={RegisterScreen} options={{headerShown: false}}/>
+// 		<AuthStack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{headerShown: false}}/>
+// 		<AuthStack.Screen name="ScanScreen" component={ScanScreen} options={{headerShown: false}}/>
+// 		<AuthStack.Screen name="GenerateScreen" options={{headerShown: false}}>
+// 			{props => <GenerateScreen {...props} />}
+// 		</AuthStack.Screen>
+// 		<AuthStack.Screen name="HistoryScreen" options={{headerShown: false}}>
+// 			{props => <HistoryScreen {...props} />}
+// 		</AuthStack.Screen>
+// 		<AuthStack.Screen name="ViewQrHistoryScreen" options={{headerShown: false}}>
+// 			{props => <ViewQrHistoryScreen {...props} />}
+// 		</AuthStack.Screen>
+// 	</AuthStack.Navigator>
+// 	}
+// 	{/* <StatusBar style='light'/>
+//	</NavigationContainer> */}

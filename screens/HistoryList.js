@@ -1,70 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import useStatusBar from '../hooks/useStatusBar';
 import IconButton from "../components/IconButton";
+import { firebase, firestore } from '../firebase/firebase';
+import { AuthUserContext } from '../navigation/AuthUserProvider';
 
-const HISTORY_LIST = [
-    {
-        id: 1,
-        name: 'Mar',
-    },
-    {
-        id: 2,
-        name: 'Cuvinte',
-    },
-    {
-        id: 3,
-        name: 'Casa',
-    },
-    {
-        id: 4,
-        name: 'Maramures',
-    },
-    {
-        id: 5,
-        name: 'Maria',
-    },
-    {
-        id: 6,
-        name: 'Harta',
-    },
-    {
-        id: 7,
-        name: 'https://www.npmjs.com/package/react-native-qrcode-svg',
-    },
-    {
-        id: 8,
-        name: 'https://www.npmjs.com/package/react-native-qrcode-svg',
-    },
-    {
-        id: 9,
-        name: 'https://www.npmjs.com/package/react-native-qrcode-svg',
-    },
-    {
-        id: 10,
-        name: 'https://www.npmjs.com/package/react-native-qrcode-svg',
-    },
-    {
-        id: 11,
-        name: 'https://www.npmjs.com/package/react-native-qrcode-svg',
-    },
-];
 
 export default function HistoryList({ navigation }) {
-    const intialData = HISTORY_LIST;
-    const [filteredData, setFilteredData] = useState(HISTORY_LIST);
+    const [filteredData, setFilteredData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
+    const [ loading, setLoading ] = useState(true);
+    const [ scans, setScans ] = useState([]);
+    const [tags, setTags] = useState([]);
+    const { user, setUser } = useContext(AuthUserContext);
+
     useStatusBar('dark-content');
 
     const onChangeText = (text) => {
         setSearchValue(text);
-        const newData = intialData.filter(s => s.name.startsWith(text));
+        const newData = scans.filter(s => s.content.startsWith(text));
         setFilteredData(newData);
     };
 
+    const userRef = firestore.collection('users').doc(user.uid);
+
+    useEffect(() => {
+        return userRef.onSnapshot(doc => {
+            userRef.collection('scans').onSnapshot( scansSnapshot => {
+                const scansList = [];
+                scansSnapshot.forEach(scansDoc => {
+                    const { content, tags, timestamp } = scansDoc.data();
+                    scansList.push({
+                        id: doc.id,
+                        content,
+                        tags,
+                        timestamp
+                    });
+                });
+                setScans(scansList);
+                setFilteredData(scansList);
+            });
+        
+            userRef.collection('tags').onSnapshot( tagsSnapshot => {
+                const tagsList = [];
+                tagsSnapshot.forEach(tagsDoc => {
+                    const { count, title, color } = tagsDoc.data();
+                    tagsList.push({
+                        id: doc.id,
+                        count,
+                        title,
+                        color
+                    });
+                });
+                setTags(tagsList);
+            });
+        
+            if (loading) {
+                setLoading(false);
+            }
+        });
+    }, []);
+    /* console.log('scans:')
+    console.log(scans);
+    console.log('tags:')
+    console.log(tags); */
     return (
         <View style={styles.container}>
             <IconButton
@@ -82,15 +84,16 @@ export default function HistoryList({ navigation }) {
                 style={styles.scrollView} 
                 contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
             >
+                {console.log(filteredData)}
                 {filteredData.map( (val, key) => (
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => console.log(navigation.navigate('ViewQrHistoryScreen', { data: val.name }))}
+                        onPress={() => console.log(navigation.navigate('ViewQrHistoryScreen', { data: val.content }))}
                         key={key}
                     >
-                        <QRCode size={50} value={val.name} />
+                        <QRCode size={50} value={val.content} />
                         <View style={styles.textWrapper}>
-                            <Text style={styles.rowText} key={val.id}>{val.name}</Text>
+                            <Text style={styles.rowText} key={val.id}>{val.content}</Text>
                         </View>
                     </TouchableOpacity>
                 ))}

@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { StyleSheet, TextInput, View, Text, TouchableOpacity, SafeAreaView, FlatList } from "react-native";
+import { Chip } from 'react-native-paper';
 import QRCode from "react-native-qrcode-svg";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -11,21 +12,49 @@ const DATA = [
 	{
 		id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
 		title: "School",
+        color: '#e5e5e5',
+        count: 0
 	},
 	{
 		id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
 		title: "Movies",
+        color: '#e5e5e5',
+        count: 0
 	},
 	{
 		id: "58694a0f-3da1-471f-bd96-145571e29d72",
 		title: "Music",
+        color: '#e5e5e5',
+        count: 0
 	},
+    {
+        id: "3545g4t4-4da1-471f-bd96-145571e29d72",
+		title: "Work hard",
+        color: '#e5e5e5',
+        count: 0
+    },
+    {
+        id: "565g4t4-4da1-471f-bd96-145571e29d72",
+		title: "Gym",
+        color: '#e5e5e5',
+        count: 0
+    },
+    {
+        id: "9u43584-4da1-471f-bd96-145571e29d72",
+		title: "Very very long title",
+        color: '#e5e5e5',
+        count: 0
+    }
 ];
 
-const Item = ({ item, addTag }) => (
-    <TouchableOpacity style={styles.item} onPress={() => addTag(item)}>
-        <Text style={styles.title}>{item.title}</Text>
-    </TouchableOpacity>
+const Item = ({ item, selectTag }) => (
+    <Chip
+        icon="information"
+        onPress={() => selectTag(item)}
+        style={{ margin: 5 }}
+    >
+        {item.title}
+    </Chip>
 );
 
 export default function GenerateQr({ navigation, scannedData }) {
@@ -33,94 +62,169 @@ export default function GenerateQr({ navigation, scannedData }) {
 	const [selectedTags, setSelectedTags] = useState([]);
 	const [searchValue, setSearchValue] = useState('');
     const [tags, setTags] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
     const { user, setUser } = useContext(AuthUserContext);
+    const userRef = firestore.collection('users').doc(user.uid);
+
     useStatusBar('dark-content');
 
 	useEffect(() => {
-		console.log('useEffect')
-        setTags(DATA);
-        //TODO: fetch tags from Firebase
-	}, [tags, selectedTags])
+        return userRef.collection('tags').onSnapshot(tagsSnapshot => {
+            const tagsList = [];
+            tagsSnapshot.forEach(tagsDoc => {
+                const { count, title, color } = tagsDoc.data();
+                const id = tagsDoc.id;
+                tagsList.push({
+                    id,
+                    count,
+                    title,
+                    color
+                });
+            });
 
-	const createTag = () => {
-		// TODO: send search value to Firebase
-		console.log(tags)
-		setTags([...tags, { id: 'sth', title: searchValue }]);
+            setTags(tagsList);
+            setFilteredData(tagsList);
+        });
+	}, [])
+
+	const createTag = (title) => {
+        async function addTag(title) {
+            const count = 0;
+            const color = '#e5e5e5';
+            const tag = await userRef.collection('tags').add({ count, title, color });
+            const doc = await tag.get();
+            const newTag = { id: doc.id, ...doc.data() }
+
+            // TODO
+            setSelectedTags([
+                ...selectedTags,
+                newTag
+            ]);
+            onChangeText('');
+        }
+
+        addTag(title);
 	}
 
-	const addTag = ({ id, title }) => {
-		let newData = selectedTags;
+    const onChangeText = (text) => {
+        setSearchValue(text);
+        const newData = tags.filter(s => s.title.startsWith(text) && !selectedTags.find(t => t.id === s.id));
+        setFilteredData(newData);
+    };
+
+	const selectTag = ({ id, title }) => {
 		const foundTag = selectedTags.find(el => el.id === id);
+        const selectedTagIndex = filteredData.findIndex(el => el.id === id);
 
 		if (foundTag) {
+            let newData = selectedTags;
 			newData = newData.filter(el => el.id !== id);
+            
+            let newTags = filteredData;
+            newTags.push(foundTag);
+
+            setFilteredData(newTags)
+            setSelectedTags(newData)
 		}
 		else {
-			newData.push({ id, title });
+            setSelectedTags([
+                ...selectedTags,
+                { id, title }
+            ])
+            setFilteredData([
+                ...filteredData.slice(0, selectedTagIndex),
+                ...filteredData.slice(selectedTagIndex + 1)
+            ])
 		}
-
-		console.log(newData);
-		setSelectedTags(newData);
     }
-    
-    const scansRef = firestore.collection('users').doc(user.uid);
 
     const onSave = () => {
 		async function createScan(content, tags) {
-            await scansRef.collection('scans').add({
-                content,
-                tags,
-                timestamp: null
-            }).then(scan => {
-            scan.update({
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            })
-        })}
+            const scan = await userRef.collection('scans').add({ content, tags, timestamp: null })
+            scan.update({ timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        }
         createScan(value, selectedTags);
         console.log(user.uid);
         navigation.navigate('ScanScreen');
 	}
 
-    const renderItem = ({ item }) => <Item {...{ item, addTag }} />;
+    const renderItem = ({ item }) => <Item {...{ item, selectTag }} />
 
     return (
         <KeyboardAwareScrollView 
             style={styles.container} 
             contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
         >
-            <QRCode value={value.length > 0 ? value : "QR"} />
-            <TextInput onChangeText={(text) => setValue(text)} value={value} />
+            <SafeAreaView style={{ flex: 1, width: '100%', alignItems: 'center' }}>
+                <View style={styles.qrWrapper}>
+                    <QRCode value={value.length > 0 ? value : "QR"} size={150} />
+                </View>
 
-			<TextInput
-                onChangeText={text => setSearchValue(text)}
-                value={searchValue}
-                style={styles.textInput}
-            />
+                <Text style={{ fontSize: 25, padding: 20 }}>
+                    {value}
+                </Text>
 
-            <SafeAreaView style={styles.container}>
-                <FlatList
-                    data={tags}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
+                <Text style={{ fontSize: 25, marginHorizontal: 20, marginVertical: 10, alignSelf: 'flex-start' }}>
+                    Tags:
+                </Text>
+
+                <SafeAreaView style={styles.tagsWrapper}>
+                    <FlatList
+                        data={selectedTags}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item.id}
+                        contentContainerStyle={{ alignSelf: 'flex-start' }}
+                        numColumns={25}
+                        columnWrapperStyle={{ flexWrap: 'wrap', flex: 1, marginTop: 5 }}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                    />
+                </SafeAreaView>
+
+                <TextInput
+                    onChangeText={text => onChangeText(text)}
+                    value={searchValue}
+                    placeholder={'Search tag...'}
+                    style={styles.textInput}
                 />
-				<TouchableOpacity style={styles.item} onPress={createTag}>
-					<Text style={styles.title}>Create</Text>
-				</TouchableOpacity>
-            </SafeAreaView>
 
-			<SafeAreaView style={styles.container}>
-                <FlatList
-                    data={selectedTags}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                />
+                <SafeAreaView style={styles.tagsWrapper}>
+                    {filteredData.length === 0 && searchValue
+                        ? <View style={{ alignItems: 'center' }}>
+                            <Chip
+                                onPress={() => createTag(searchValue)}
+                                icon="information"
+                                style={{ margin: 5 }}
+                            >
+                                Add new
+                            </Chip>
+                        </View>
+                        : <FlatList
+                            data={filteredData}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.id}
+                            contentContainerStyle={{ alignSelf: 'flex-start' }}
+                            numColumns={25}
+                            columnWrapperStyle={{ flexWrap: 'wrap', flex: 1, marginTop: 5 }}
+                            showsVerticalScrollIndicator={false}
+                            showsHorizontalScrollIndicator={false}
+                        />
+                    }
+
+                    {/* <TouchableOpacity style={styles.item} onPress={createTag}>
+                        <Text style={styles.title}>
+                            Create
+                        </Text>
+                    </TouchableOpacity> */}
+                </SafeAreaView>
+
+                <Text
+                    onPress={onSave}
+                    style={styles.footerLink}
+                >
+                    Save Scan
+                </Text>
             </SafeAreaView>
-            <Text
-                onPress={onSave}
-                style={styles.footerLink}
-            >
-                Save Scan
-            </Text>
         </KeyboardAwareScrollView>
     );
 }
@@ -129,8 +233,20 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#F2F2F2",
-        // alignItems: "center",
-        // justifyContent: "flex-end",
+        paddingTop: 100
+    },
+    tagsWrapper: {
+        flex: 1,
+        width: '90%'
+    },
+    qrWrapper: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '80%',
+        backgroundColor: '#fff',
+        padding: 35,
+        elevation: 1,
+        borderRadius: 25
     },
     item: {
         backgroundColor: "#f9c2ff",
@@ -142,15 +258,15 @@ const styles = StyleSheet.create({
         fontSize: 20,
 	},
 	textInput: {
-        width: '80%',
-        height: 40,
+        width: '90%',
+        height: 50,
         backgroundColor: '#fff',
         borderRadius: 50,
         paddingHorizontal: 20,
         marginVertical: 20
     },    
     footerLink: {
-        color: "white",
+        color: "#000",
         fontWeight: "600",
         fontSize: 23,
         padding: 35,

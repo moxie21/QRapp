@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import ColorSwatch from './components/ColorSwatch';
 
-export default function App() {
+import ColorSwatch from '../components/ColorSwatch';
+import IconButton from '../components/IconButton';
+import useStatusBar from '../hooks/useStatusBar';
+
+export default function App({navigation}) {
 	const [value, setValue] = useState('Hello');
 	const [qrColor, setQrColor] = useState('#000');
-
+	useStatusBar('dark-content');
+	
 	const onChangeQrColor = (c) => {
 		setQrColor(c);
     };
 
 	return (
 		<View style={styles.container}>
+			<IconButton
+                style={{ position: "absolute", zIndex: 1, top: 45, left: 10 }}
+                iconName="chevron-left"
+                color="#000"
+                size={40}
+                onPress={() => navigation.navigate("ScanScreen")}
+            />
 			<View style={styles.generatedContent}>
 				<QRCode 
 					value={value.length >0 ? value :':('}

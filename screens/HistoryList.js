@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+
+import useStatusBar from '../hooks/useStatusBar';
+import IconButton from "../components/IconButton";
 
 const HISTORY_LIST = [
     {
@@ -53,6 +57,7 @@ export default function HistoryList({ navigation }) {
     const intialData = HISTORY_LIST;
     const [filteredData, setFilteredData] = useState(HISTORY_LIST);
     const [searchValue, setSearchValue] = useState('');
+    useStatusBar('dark-content');
 
     const onChangeText = (text) => {
         setSearchValue(text);
@@ -62,21 +67,26 @@ export default function HistoryList({ navigation }) {
 
     return (
         <View style={styles.container}>
+            <IconButton
+                iconName="chevron-up"
+                color="#2F2F31"
+                size={40}
+                onPress={() => navigation.goBack()}
+            />
             <TextInput
                 onChangeText={text => onChangeText(text)}
                 value={searchValue}
                 style={styles.textInput}
             />
-
-            <ScrollView 
+            <KeyboardAwareScrollView 
                 style={styles.scrollView} 
                 contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
             >
-                {filteredData.map(val => (
+                {filteredData.map( (val, key) => (
                     <TouchableOpacity
                         style={styles.row}
                         onPress={() => console.log(navigation.navigate('ViewQrHistoryScreen', { data: val.name }))}
-                        key={val.key}
+                        key={key}
                     >
                         <QRCode size={50} value={val.name} />
                         <View style={styles.textWrapper}>
@@ -84,7 +94,7 @@ export default function HistoryList({ navigation }) {
                         </View>
                     </TouchableOpacity>
                 ))}
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </View>
     );
 }

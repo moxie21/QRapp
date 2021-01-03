@@ -15,6 +15,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Lato_400Regular, useFonts } from '@expo-google-fonts/lato';
 import { AppLoading } from 'expo';
 
+
+import Providers from './navigation';
+
 const WelcomeScreen = ({ navigation }) => <Welcome navigation={navigation} />
 const ScanScreen = ({ navigation }) => <ScanQr navigation={navigation} />
 const GenerateScreen = ({ route }) => <GenerateQr scannedData={route.params}  />
@@ -38,25 +41,28 @@ export default function App() {
 	// const [user, setUser] = useState(null);
 
 	return (
-		<NavigationContainer>
-			<AppStack.Navigator >
-				<AppStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown: false}}/>
-				<AppStack.Screen name="LoginScreen" component={LoginScreen} options={{headerShown: false}}/>
-				<AppStack.Screen name="RegisterScreen" component={RegisterScreen} options={{headerShown: false}}/>
-				<AppStack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{headerShown: false}}/>
-				<AppStack.Screen name="ScanScreen" component={ScanScreen} options={{headerShown: false}}/>
-				<AppStack.Screen name="GenerateScreen" options={{headerShown: false}}>
-					{props => <GenerateScreen {...props} />}
-				</AppStack.Screen>
-				<AppStack.Screen name="HistoryScreen" options={{headerShown: false}}>
-					{props => <HistoryScreen {...props} />}
-				</AppStack.Screen>
-				<AppStack.Screen name="ViewQrHistoryScreen" options={{headerShown: false}}>
-					{props => <ViewQrHistoryScreen {...props} />}
-				</AppStack.Screen>
-			</AppStack.Navigator >
-			{/* <StatusBar style='light'/> */}
-		</NavigationContainer>
+
+		 <Providers />
+
+		// <NavigationContainer>
+		// 	<AppStack.Navigator >
+		// 		<AppStack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{headerShown: false}}/>
+		// 		<AppStack.Screen name="LoginScreen" component={LoginScreen} options={{headerShown: false}}/>
+		// 		<AppStack.Screen name="RegisterScreen" component={RegisterScreen} options={{headerShown: false}}/>
+		// 		<AppStack.Screen name="ForgotPasswordScreen" component={ForgotPasswordScreen} options={{headerShown: false}}/>
+		// 		<AppStack.Screen name="ScanScreen" component={ScanScreen} options={{headerShown: false}}/>
+		// 		<AppStack.Screen name="GenerateScreen" options={{headerShown: false}}>
+		// 			{props => <GenerateScreen {...props} />}
+		// 		</AppStack.Screen>
+		// 		<AppStack.Screen name="HistoryScreen" options={{headerShown: false}}>
+		// 			{props => <HistoryScreen {...props} />}
+		// 		</AppStack.Screen>
+		// 		<AppStack.Screen name="ViewQrHistoryScreen" options={{headerShown: false}}>
+		// 			{props => <ViewQrHistoryScreen {...props} />}
+		// 		</AppStack.Screen>
+		// 	</AppStack.Navigator >
+		// 	{/* <StatusBar style='light'/> */}
+		// </NavigationContainer>
 	);
 }
 

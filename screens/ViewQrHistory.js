@@ -2,7 +2,11 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
+import useStatusBar from '../hooks/useStatusBar';
+
 export default function ViewOqHistory({ navigation, data }) {
+    useStatusBar('dark-content');
+
     return (
         <View style={styles.container}>
 			<QRCode 

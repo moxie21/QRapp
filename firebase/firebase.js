@@ -20,6 +20,8 @@ const logout = () => auth.signOut();
 
 const passwordReset = email => auth.sendPasswordResetEmail(email);
 
-export { firebase, auth, loginWithEmail, registerWithEmail, logout, passwordReset };
+const firestore = firebase.firestore();
+
+export { firebase, auth, loginWithEmail, registerWithEmail, logout, passwordReset, firestore };
 
 

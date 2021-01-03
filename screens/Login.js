@@ -44,12 +44,12 @@ export default function LoginScreen({ navigation }) {
                             return;
                         }
                         const user = firestoreDocument.data();
-                        console.log("Userul logat este:");
-                        console.log(user);
-                        navigation.navigate("ScanScreen");
+                        console.log('\x1b[33m%s\x1b[0m: ', "Userul logat este:");
+                        console.log('\x1b[33m%s\x1b[0m: ', user);
+                        // navigation.navigate("ScanScreen");
                     })
                     .catch((error) => {
-                        alert(error);
+                        alert(`catch 1: ${error}`);
                     });
             })
             .catch((error) => {

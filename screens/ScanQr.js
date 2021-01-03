@@ -2,14 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button, Alert, TouchableOpacity } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
+import IconButton from '../components/IconButton';
+import useStatusBar from '../hooks/useStatusBar';
+
 export default function ScanQr({ navigation }) {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
+    const [camera, setCamera] = useState();
+
+    useStatusBar('light-content');
 
     useEffect(() => {
         (async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
+            if (status === 'granted') {
+                setScanned(false);
+            }
         })();
     }, []);
 
@@ -23,7 +32,8 @@ export default function ScanQr({ navigation }) {
             {
                 text: 'Remember me',
                 onPress: () => {
-                    // setScanned(false);
+                    setScanned(false);
+                    // camera.pausePreview();// :(
                     navigation.navigate("GenerateScreen", { type: type, data: data });
                 }
             }
@@ -37,13 +47,31 @@ export default function ScanQr({ navigation }) {
         return <Text>No access to camera</Text>;
     }
 
+        console.log(camera)
+
     return (
         <>
+            <IconButton
+                style={{ position: "absolute", zIndex: 1, top: 45, right: 30 }}
+                iconName="cogs"
+                color="#fff"
+                size={40}
+                onPress={() => navigation.navigate("SettingsScreen")}
+            />
+            <IconButton
+                style={{ position: "absolute", zIndex: 1, bottom: 45, right: 30 }}
+                iconName="qrcode-edit"
+                color="#fff"
+                size={40}
+                onPress={() => navigation.navigate("GenerateScreen",{ type: 'rq', data: 'hello' })}
+            />
             {console.log(scanned ? "PUTEM" : "NU PUTEM")}
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
+                ref={ref => setCamera(ref)}
             />
+            <View style={styles.content}>
             <TouchableOpacity 
                 style={styles.historyNav}
                 onPress={() => {
@@ -53,16 +81,20 @@ export default function ScanQr({ navigation }) {
             >
                 <Text style={styles.historyText}>History</Text>
             </TouchableOpacity>
+            </View>
+           
         </>
     );
 }
 
 const styles = StyleSheet.create({
-    historyNav: {
+    content:{
         flex: 1,
         justifyContent: 'flex-end',
         alignItems: 'center',
-        bottom: 25
+    },
+    historyNav: {
+        bottom: 30,
     },
     historyText: {
         color: '#fff',

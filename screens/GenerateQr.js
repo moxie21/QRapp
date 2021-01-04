@@ -5,53 +5,16 @@ import QRCode from "react-native-qrcode-svg";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import useStatusBar from '../hooks/useStatusBar';
+import IconButton from "../components/IconButton";
 import { firebase, firestore } from '../firebase/firebase';
 import { AuthUserContext } from '../navigation/AuthUserProvider';
 
-const DATA = [
-	{
-		id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-		title: "School",
-        color: '#e5e5e5',
-        count: 0
-	},
-	{
-		id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-		title: "Movies",
-        color: '#e5e5e5',
-        count: 0
-	},
-	{
-		id: "58694a0f-3da1-471f-bd96-145571e29d72",
-		title: "Music",
-        color: '#e5e5e5',
-        count: 0
-	},
-    {
-        id: "3545g4t4-4da1-471f-bd96-145571e29d72",
-		title: "Work hard",
-        color: '#e5e5e5',
-        count: 0
-    },
-    {
-        id: "565g4t4-4da1-471f-bd96-145571e29d72",
-		title: "Gym",
-        color: '#e5e5e5',
-        count: 0
-    },
-    {
-        id: "9u43584-4da1-471f-bd96-145571e29d72",
-		title: "Very very long title",
-        color: '#e5e5e5',
-        count: 0
-    }
-];
 
 const Item = ({ item, selectTag }) => (
     <Chip
         icon="information"
         onPress={() => selectTag(item)}
-        style={{ margin: 5 }}
+        style={{ margin: 5 , backgroundColor: item.color}}
     >
         {item.title}
     </Chip>
@@ -95,12 +58,11 @@ export default function GenerateQr({ navigation, scannedData }) {
             const doc = await tag.get();
             const newTag = { id: doc.id, ...doc.data() }
 
-            // TODO
             setSelectedTags([
                 ...selectedTags,
                 newTag
             ]);
-            onChangeText('');
+            onChangeText(searchValue);
         }
 
         addTag(title);
@@ -108,11 +70,11 @@ export default function GenerateQr({ navigation, scannedData }) {
 
     const onChangeText = (text) => {
         setSearchValue(text);
-        const newData = tags.filter(s => s.title.startsWith(text) && !selectedTags.find(t => t.id === s.id));
+        const newData = tags.filter(s => s.title.includes(text) && !selectedTags.find(t => t.id === s.id));
         setFilteredData(newData);
     };
 
-	const selectTag = ({ id, title }) => {
+	const selectTag = ({ id, title, color }) => {
 		const foundTag = selectedTags.find(el => el.id === id);
         const selectedTagIndex = filteredData.findIndex(el => el.id === id);
 
@@ -129,7 +91,7 @@ export default function GenerateQr({ navigation, scannedData }) {
 		else {
             setSelectedTags([
                 ...selectedTags,
-                { id, title }
+                { id, title, color }
             ])
             setFilteredData([
                 ...filteredData.slice(0, selectedTagIndex),
@@ -151,56 +113,34 @@ export default function GenerateQr({ navigation, scannedData }) {
     const renderItem = ({ item }) => <Item {...{ item, selectTag }} />
 
     return (
-        <KeyboardAwareScrollView 
-            style={styles.container} 
-            contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
-        >
-            <SafeAreaView style={{ flex: 1, width: '100%', alignItems: 'center' }}>
-                <View style={styles.qrWrapper}>
-                    <QRCode value={value.length > 0 ? value : "QR"} size={150} />
-                </View>
+        <>
+            <IconButton
+                style={{ position: "absolute", zIndex: 1, top: 45, right: 30 }}
+                iconName="close"
+                color="#ff4b75"
+                size={40}
+                onPress={() => navigation.navigate("ScanScreen")}
+            />
+            <KeyboardAwareScrollView 
+                style={styles.container} 
+                contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
+            >
+                <SafeAreaView style={{ flex: 1, width: '100%', alignItems: 'center' }}>
+                    <View style={styles.qrWrapper}>
+                        <QRCode value={value.length > 0 ? value : "QR"} size={150} />
+                    </View>
 
-                <Text style={{ fontSize: 25, padding: 20 }}>
-                    {value}
-                </Text>
+                    <Text style={{ fontSize: 25, padding: 20 }}>
+                        {value}
+                    </Text>
 
-                <Text style={{ fontSize: 25, marginHorizontal: 20, marginVertical: 10, alignSelf: 'flex-start' }}>
-                    Tags:
-                </Text>
+                    <Text style={{ fontSize: 25, marginHorizontal: 20, marginVertical: 10, alignSelf: 'flex-start' }}>
+                        Tags:
+                    </Text>
 
-                <SafeAreaView style={styles.tagsWrapper}>
-                    <FlatList
-                        data={selectedTags}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item.id}
-                        contentContainerStyle={{ alignSelf: 'flex-start' }}
-                        numColumns={25}
-                        columnWrapperStyle={{ flexWrap: 'wrap', flex: 1, marginTop: 5 }}
-                        showsVerticalScrollIndicator={false}
-                        showsHorizontalScrollIndicator={false}
-                    />
-                </SafeAreaView>
-
-                <TextInput
-                    onChangeText={text => onChangeText(text)}
-                    value={searchValue}
-                    placeholder={'Search tag...'}
-                    style={styles.textInput}
-                />
-
-                <SafeAreaView style={styles.tagsWrapper}>
-                    {filteredData.length === 0 && searchValue
-                        ? <View style={{ alignItems: 'center' }}>
-                            <Chip
-                                onPress={() => createTag(searchValue)}
-                                icon="information"
-                                style={{ margin: 5 }}
-                            >
-                                Add new
-                            </Chip>
-                        </View>
-                        : <FlatList
-                            data={filteredData}
+                    <SafeAreaView style={styles.tagsWrapper}>
+                        <FlatList
+                            data={selectedTags}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
                             contentContainerStyle={{ alignSelf: 'flex-start' }}
@@ -209,23 +149,54 @@ export default function GenerateQr({ navigation, scannedData }) {
                             showsVerticalScrollIndicator={false}
                             showsHorizontalScrollIndicator={false}
                         />
-                    }
+                    </SafeAreaView>
 
-                    {/* <TouchableOpacity style={styles.item} onPress={createTag}>
-                        <Text style={styles.title}>
-                            Create
-                        </Text>
-                    </TouchableOpacity> */}
+                    <TextInput
+                        onChangeText={text => onChangeText(text)}
+                        value={searchValue}
+                        placeholder={'Search tag...'}
+                        style={styles.textInput}
+                    />
+
+                    <SafeAreaView style={styles.tagsWrapper}>
+                        {filteredData.length === 0 && searchValue
+                            ? <View style={{ alignItems: 'center' }}>
+                                <Chip
+                                    onPress={() => createTag(searchValue)}
+                                    icon="information"
+                                    style={{ margin: 5 }}
+                                >
+                                    Add new
+                                </Chip>
+                            </View>
+                            : <FlatList
+                                data={filteredData}
+                                renderItem={renderItem}
+                                keyExtractor={(item) => item.id}
+                                contentContainerStyle={{ alignSelf: 'flex-start' }}
+                                numColumns={25}
+                                columnWrapperStyle={{ flexWrap: 'wrap', flex: 1, marginTop: 5 }}
+                                showsVerticalScrollIndicator={false}
+                                showsHorizontalScrollIndicator={false}
+                            />
+                        }
+
+                        {/* <TouchableOpacity style={styles.item} onPress={createTag}>
+                            <Text style={styles.title}>
+                                Create
+                            </Text>
+                        </TouchableOpacity> */}
+                    </SafeAreaView>
+
+                    <Text
+                        onPress={onSave}
+                        style={styles.footerLink}
+                    >
+                        Save Scan
+                    </Text>
                 </SafeAreaView>
-
-                <Text
-                    onPress={onSave}
-                    style={styles.footerLink}
-                >
-                    Save Scan
-                </Text>
-            </SafeAreaView>
-        </KeyboardAwareScrollView>
+            </KeyboardAwareScrollView>
+        </>
     );
 }
 
@@ -266,7 +237,7 @@ const styles = StyleSheet.create({
         marginVertical: 20
     },    
     footerLink: {
-        color: "#000",
+        color: "#00e38c",
         fontWeight: "600",
         fontSize: 23,
         padding: 35,

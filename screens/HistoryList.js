@@ -1,40 +1,54 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Modal, TouchableOpacity, SafeAreaView, FlatList } from 'react-native';
+import { Chip } from 'react-native-paper';
 import QRCode from 'react-native-qrcode-svg';
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-
 import useStatusBar from '../hooks/useStatusBar';
 import IconButton from "../components/IconButton";
 import { firebase, firestore } from '../firebase/firebase';
 import { AuthUserContext } from '../navigation/AuthUserProvider';
 
+const Item = ({ item, selectTag, selectedTags }) => {
+    const [selected, setSelected] = useState(false);
+
+    useEffect(() => setSelected(selectedTags.findIndex(t => t === item.id) != -1), [])
+
+    return (
+        <Chip
+            icon="tag"
+            onPress={() => {
+                selectTag(item.id)
+                setSelected(!selected)
+            }}
+            style={{ margin: 5 , backgroundColor: item.color}}
+            selected={selected}
+        >
+            {item.title}
+        </Chip>
+    )
+};
 
 export default function HistoryList({ navigation }) {
     const [filteredData, setFilteredData] = useState([]);
     const [searchValue, setSearchValue] = useState('');
-    const [ loading, setLoading ] = useState(true);
-    const [ scans, setScans ] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [scans, setScans] = useState([]);
     const [tags, setTags] = useState([]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedTags, setSelectedTags] = useState([]);
     const { user, setUser } = useContext(AuthUserContext);
+    const userRef = firestore.collection('users').doc(user.uid);
 
     useStatusBar('dark-content');
 
-    const onChangeText = (text) => {
-        setSearchValue(text);
-        const newData = scans.filter(s => s.content.startsWith(text));
-        setFilteredData(newData);
-    };
-
-    const userRef = firestore.collection('users').doc(user.uid);
-
     useEffect(() => {
         return userRef.onSnapshot(doc => {
-            userRef.collection('scans').onSnapshot( scansSnapshot => {
+            userRef.collection('scans').onSnapshot(scansSnapshot => {
                 const scansList = [];
                 scansSnapshot.forEach(scansDoc => {
                     const { content, tags, timestamp } = scansDoc.data();
                     scansList.push({
-                        id: doc.id,
+                        id: scansDoc.id,
                         content,
                         tags,
                         timestamp
@@ -43,13 +57,13 @@ export default function HistoryList({ navigation }) {
                 setScans(scansList);
                 setFilteredData(scansList);
             });
-        
-            userRef.collection('tags').onSnapshot( tagsSnapshot => {
+
+            userRef.collection('tags').onSnapshot(tagsSnapshot => {
                 const tagsList = [];
                 tagsSnapshot.forEach(tagsDoc => {
                     const { count, title, color } = tagsDoc.data();
                     tagsList.push({
-                        id: doc.id,
+                        id: tagsDoc.id,
                         count,
                         title,
                         color
@@ -57,16 +71,51 @@ export default function HistoryList({ navigation }) {
                 });
                 setTags(tagsList);
             });
-        
+
             if (loading) {
                 setLoading(false);
             }
         });
     }, []);
-    /* console.log('scans:')
-    console.log(scans);
-    console.log('tags:')
-    console.log(tags); */
+
+    useEffect(() => {
+        console.log('FILTER...')
+        filterData();
+    }, [searchValue])
+
+    const onChangeText = (text) => {
+        setSearchValue(text);
+        // const newData = scans.filter(s => s.content.includes(text));
+        // setFilteredData(newData);
+    };
+
+    const selectTag = (id) => {
+        const index = selectedTags.findIndex(i => i === id);
+
+        if (index === -1) {
+            setSelectedTags([...selectedTags, id])
+        }
+        else {
+            setSelectedTags([
+                ...selectedTags.splice(0, index),
+                ...selectedTags.splice(index + 1)
+            ])
+        }
+    }
+
+    const filterData = () => {
+        if (selectedTags.length > 0) {
+            setFilteredData(scans.filter(s => s.tags.findIndex(t => selectedTags.findIndex(st => st === t.id) !== -1) !== -1).filter(s => searchValue.length > 0 ? s.content.includes(searchValue) : true));
+        }
+        else {
+            setFilteredData(scans.filter(s => searchValue.length > 0 ? s.content.includes(searchValue) : true));
+            // onChangeText('');
+        }
+        setModalVisible(false);
+    }
+    
+    const renderItem = ({ item }) => <Item {...{ item, selectTag, selectedTags }} />
+
     return (
         <View style={styles.container}>
             <IconButton
@@ -75,20 +124,28 @@ export default function HistoryList({ navigation }) {
                 size={40}
                 onPress={() => navigation.goBack()}
             />
-            <TextInput
-                onChangeText={text => onChangeText(text)}
-                value={searchValue}
-                style={styles.textInput}
-            />
-            <KeyboardAwareScrollView 
-                style={styles.scrollView} 
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TextInput
+                    onChangeText={text => onChangeText(text)}
+                    value={searchValue}
+                    style={styles.textInput}
+                />
+                <IconButton
+                    iconName="filter-variant"
+                    color="#2F2F31"
+                    size={35}
+                    style={{ padding: 10 }}
+                    onPress={() => setModalVisible(true)}
+                />
+            </View>
+            <KeyboardAwareScrollView
+                style={styles.scrollView}
                 contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
             >
-                {console.log(filteredData)}
-                {filteredData.map( (val, key) => (
+                {filteredData.map((val, key) => (
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => console.log(navigation.navigate('ViewQrHistoryScreen', { data: val.content }))}
+                        onPress={() => navigation.navigate('ViewQrHistoryScreen', { data: val.content })}
                         key={key}
                     >
                         <QRCode size={50} value={val.content} />
@@ -98,6 +155,42 @@ export default function HistoryList({ navigation }) {
                     </TouchableOpacity>
                 ))}
             </KeyboardAwareScrollView>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+            >
+                <View style={[styles.centeredView, { 
+                    backgroundColor: '#0008',
+                    flexDirection: 'row-reverse',
+                    alignItems: 'flex-end',
+                    marginBottom: -20
+                }]}>
+                    <View style={styles.modalView}>
+                    <SafeAreaView style={styles.tagsWrapper}>
+                        <FlatList
+                            data={tags}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.id}
+                            contentContainerStyle={{ alignSelf: 'flex-start' }}
+                            numColumns={25}
+                            columnWrapperStyle={{ flexWrap: 'wrap', flex: 1, marginTop: 5 }}
+                            showsVerticalScrollIndicator={false}
+                            showsHorizontalScrollIndicator={false}
+                        />
+
+                        <TouchableOpacity>
+                            <Text
+                                style={{ alignSelf: 'center', fontSize: 20 }}
+                                onPress={filterData}
+                            >
+                                Search
+                            </Text>
+                        </TouchableOpacity>
+                    </SafeAreaView>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -109,6 +202,43 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: 40
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalView: {
+        width: '100%',
+        height: '50%',
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    openButton: {
+        backgroundColor: "#F194FF",
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2
+    },
+    textStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    modalText: {
+        marginBottom: 15,
+        textAlign: "center"
     },
     textInput: {
         width: '80%',

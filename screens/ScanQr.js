@@ -63,7 +63,7 @@ export default function ScanQr({ navigation }) {
                 iconName="qrcode-edit"
                 color="#fff"
                 size={40}
-                onPress={() => navigation.navigate("GenerateScreen",{ type: 'rq', data: 'hello' })}
+                onPress={() => navigation.navigate("GenerateScreen", { type: 'qr', data: 'fgjehn' })}
             />
             {console.log(scanned ? "PUTEM" : "NU PUTEM")}
             <BarCodeScanner

@@ -7,13 +7,14 @@ import {
     FlatList,
     Share,
     TouchableOpacity,
-    Linking
+    Linking,
+    Alert
 } from "react-native";
+import Clipboard from 'expo-clipboard';
 import QRCode from "react-native-qrcode-svg";
 import { Chip } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { MaterialIcons } from "@expo/vector-icons";
-
 import useStatusBar from "../hooks/useStatusBar";
 import IconButton from "../components/IconButton";
 import { firebase, firestore } from "../firebase/firebase";
@@ -26,37 +27,45 @@ const Item = ({ item }) => (
 );
 
 export default function ViewOqHistory({ navigation, data }) {
-    const [tags, setTags] = useState([]);
     const { user, setUser } = useContext(AuthUserContext);
+    const [tags, setTags] = useState([]);
     const userRef = firestore.collection("users").doc(user.uid);
 
     useStatusBar("dark-content");
 
     useEffect(() => {
-        return userRef.collection("tags").onSnapshot((tagsSnapshot) => {
+        userRef.collection('tags').onSnapshot(tagsSnapshot => {
             const tagsList = [];
-            tagsSnapshot.forEach((tagsDoc) => {
+            tagsSnapshot.forEach(tagsDoc => {
                 const { count, title, color } = tagsDoc.data();
-                const id = tagsDoc.id;
                 tagsList.push({
-                    id,
+                    id: tagsDoc.id,
                     count,
                     title,
-                    color,
+                    color
                 });
             });
-
             setTags(tagsList);
         });
-    }, []);
+    })
 
     const renderItem = ({ item }) => <Item {...{ item }} />;
 
     const onShare = async () => {
         try {
-            const result = await Share.share({
-                message: data
-            });
+            const supported = await Linking.canOpenURL(data.content);
+            let result;
+            if(!supported){
+                result = await Share.share({
+                    message: data.content
+                });
+                console.log("mesaj")
+            } else {
+                result = await Share.share({
+                    url: data.content
+                });
+                console.log('url')
+            }
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
                     // shared with activity type of result.activityType
@@ -70,6 +79,46 @@ export default function ViewOqHistory({ navigation, data }) {
             alert(error.message);
         }
     };
+
+    const openWithBrowser = async () => {
+        try {
+            await Linking.openURL(data.content);
+        }
+        catch (err) {
+            alert('This link is not formatted correctly');
+            console.log(err);
+        }
+    }
+
+    const copyToClipboard = () => {
+        Clipboard.setString(data.content);
+        Alert.alert("Coppied to clipboard");
+    }
+
+    const onDelete = () => {
+        Alert.alert(
+            'Do you want to delete this scan?',
+            '',
+            [
+              {
+                text: "Cancel",
+                // onPress: () => console.log("Cancel Pressed"),
+                style: "cancel"
+              },
+              { text: "OK", 
+                onPress: () => { 
+                    userRef.collection("scans").doc(data.id).delete().then(() => {
+                        console.log("Document successfully deleted!");
+                        navigation.navigate("HistoryScreen");
+                    }).catch(error => {
+                        console.error("Error removing document: ", error);
+                    });
+                } 
+              }
+            ],
+            { cancelable: false }
+          );
+    }
 
     return (
         <>
@@ -90,21 +139,19 @@ export default function ViewOqHistory({ navigation, data }) {
                 <SafeAreaView
                     style={{ flex: 1, width: "100%", alignItems: "center" }}
                 >
-                    <View style={styles.qrWrapper}>
+                    <TouchableOpacity style={styles.qrWrapper} onPress={copyToClipboard}>
                         <QRCode
                             value={data.length > 0 ? data : "QR"}
                             size={150}
                         />
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.textWrapper}>
-                        <Text style={styles.text}>{data}</Text>
+                        <Text style={styles.text}>{data.content}</Text>
                     </View>
 
                     <SafeAreaView style={styles.iconButtonsWrapper}>
                         <TouchableOpacity
-                            onPress={async () => {
-                                await Linking.openURL('https://www.google.com');
-                            }}
+                            onPress={openWithBrowser}
                             style={[
                                 styles.iconButton,
                                 {
@@ -138,7 +185,7 @@ export default function ViewOqHistory({ navigation, data }) {
                             />
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => alert("c")}
+                            onPress={onDelete}
                             style={[
                                 styles.iconButton,
                                 {
@@ -162,7 +209,7 @@ export default function ViewOqHistory({ navigation, data }) {
                             Tags:
                         </Text>
                         <FlatList
-                            data={tags}
+                            data={tags.filter(t => data.tags.findIndex(st => st.id === t.id) != -1)}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.id}
                             contentContainerStyle={{ alignSelf: "flex-start" }}

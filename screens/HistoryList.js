@@ -20,8 +20,9 @@ const Item = ({ item, selectTag, selectedTags }) => {
                 selectTag(item.id)
                 setSelected(!selected)
             }}
-            style={{ margin: 5 , backgroundColor: item.color}}
+            style={{ margin: 5}}
             selected={selected}
+            selectedColor={item.color}
         >
             {item.title}
         </Chip>
@@ -124,11 +125,16 @@ export default function HistoryList({ navigation }) {
                 size={40}
                 onPress={() => navigation.goBack()}
             />
+            <Text style={{ fontSize: 30, marginHorizontal: 20, alignSelf: 'flex-start' }}>
+                History
+            </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <TextInput
                     onChangeText={text => onChangeText(text)}
                     value={searchValue}
                     style={styles.textInput}
+                    clearButtonMode='while-editing'
+                    placeholder='Search...'
                 />
                 <IconButton
                     iconName="filter-variant"
@@ -142,16 +148,34 @@ export default function HistoryList({ navigation }) {
                 style={styles.scrollView}
                 contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
             >
-                {filteredData.map((val, key) => (
+                {filteredData.map((scan, key) => (
                     <TouchableOpacity
                         style={styles.row}
-                        onPress={() => navigation.navigate('ViewQrHistoryScreen', { data: val.content })}
+                        onPress={() => navigation.navigate('ViewQrHistoryScreen', { data: scan })}
                         key={key}
                     >
-                        <QRCode size={50} value={val.content} />
-                        <View style={styles.textWrapper}>
-                            <Text style={styles.rowText} key={val.id}>{val.content}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', width: '95%' }}>
+                            <QRCode size={50} value={scan.content} />
+                            <View style={styles.textWrapper}>
+                                <Text style={styles.rowText} key={scan.id}>{scan.content}</Text>
+                            </View>
                         </View>
+                        
+                        <View style={{ justifyContent: 'center', alignItems: 'center', width: '5%' }}>
+                            {tags.filter(t => scan.tags.findIndex(st => st.id === t.id) != -1).map((tag, key) => (
+                                <View
+                                    style={{
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: 8 / 2,
+                                        margin:2,
+                                        backgroundColor: tag.color,
+                                    }}
+                                    key={key}
+                                />
+                            ))}
+                        </View>
+                        
                     </TouchableOpacity>
                 ))}
             </KeyboardAwareScrollView>
@@ -270,6 +294,7 @@ const styles = StyleSheet.create({
         color: '#9A9A9A',
         fontSize: 15,
         marginLeft: 20,
-        marginRight: 20
+        marginRight: 20,
+        paddingRight: 10
     },
 });

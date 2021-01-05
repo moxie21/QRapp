@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import 'react-native-gesture-handler';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, LogBox } from 'react-native';
 
 import { Lato_400Regular, useFonts } from '@expo-google-fonts/lato';
 import { AppLoading } from 'expo';
@@ -9,6 +9,8 @@ import Providers from './navigation';
 
 
 export default function App() {
+	LogBox.ignoreAllLogs();
+
 	const [fontsLoaded] = useFonts({
 		Lato_400Regular
 	});

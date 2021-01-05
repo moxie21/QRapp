@@ -115,10 +115,10 @@ export default function GenerateQr({ navigation, scannedData }) {
     return (
         <>
             <IconButton
-                style={{ position: "absolute", zIndex: 1, top: 45, right: 30 }}
+                style={{ position: "absolute", zIndex: 1, top: 45, right: 20 }}
                 iconName="close"
-                color="#ff4b75"
-                size={40}
+                color="#000"
+                size={30}
                 onPress={() => navigation.navigate("ScanScreen")}
             />
             <KeyboardAwareScrollView 
@@ -156,6 +156,7 @@ export default function GenerateQr({ navigation, scannedData }) {
                         value={searchValue}
                         placeholder={'Search tag...'}
                         style={styles.textInput}
+                        clearButtonMode='while-editing'
                     />
 
                     <SafeAreaView style={styles.tagsWrapper}>
@@ -163,7 +164,7 @@ export default function GenerateQr({ navigation, scannedData }) {
                             ? <View style={{ alignItems: 'center' }}>
                                 <Chip
                                     onPress={() => createTag(searchValue)}
-                                    icon="information"
+                                    icon="plus"
                                     style={{ margin: 5 }}
                                 >
                                     Add new
@@ -180,22 +181,17 @@ export default function GenerateQr({ navigation, scannedData }) {
                                 showsHorizontalScrollIndicator={false}
                             />
                         }
-
-                        {/* <TouchableOpacity style={styles.item} onPress={createTag}>
-                            <Text style={styles.title}>
-                                Create
-                            </Text>
-                        </TouchableOpacity> */}
-                    </SafeAreaView>
-
-                    <Text
-                        onPress={onSave}
-                        style={styles.footerLink}
-                    >
-                        Save Scan
-                    </Text>
+                    </SafeAreaView>                    
                 </SafeAreaView>
             </KeyboardAwareScrollView>
+            <SafeAreaView style={styles.save}>
+                <Text
+                    onPress={onSave}
+                    style={styles.footerLink}
+                >
+                    Save Scan
+                </Text>
+            </SafeAreaView>
         </>
     );
 }
@@ -205,6 +201,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#F2F2F2",
         paddingTop: 100
+    },
+    save: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff8',
     },
     tagsWrapper: {
         flex: 1,
@@ -237,9 +242,9 @@ const styles = StyleSheet.create({
         marginVertical: 20
     },    
     footerLink: {
-        color: "#00e38c",
+        color: "#2E8B57",
         fontWeight: "600",
         fontSize: 23,
-        padding: 35,
+        padding: 15,
     },
 });

@@ -13,13 +13,21 @@ export default function ScanQr({ navigation }) {
     useStatusBar('light-content');
 
     useEffect(() => {
-        (async () => {
+        const confirmPermission = async () => {
             const { status } = await BarCodeScanner.requestPermissionsAsync();
             setHasPermission(status === 'granted');
             if (status === 'granted') {
                 setScanned(false);
             }
-        })();
+        }
+
+        confirmPermission();
+
+        const unsubscribe = navigation.addListener('focus', () => {
+			confirmPermission();
+		});
+	  
+		return unsubscribe;
     }, []);
 
     const handleBarCodeScanned = ({ type, data }) => {
@@ -32,8 +40,6 @@ export default function ScanQr({ navigation }) {
             {
                 text: 'Remember me',
                 onPress: () => {
-                    setScanned(false);
-                    // camera.pausePreview();// :(
                     navigation.navigate("GenerateScreen", { type: type, data: data });
                 }
             }
@@ -46,8 +52,6 @@ export default function ScanQr({ navigation }) {
     if (hasPermission === false) {
         return <Text>No access to camera</Text>;
     }
-
-        console.log(camera)
 
     return (
         <>
@@ -63,9 +67,15 @@ export default function ScanQr({ navigation }) {
                 iconName="qrcode-edit"
                 color="#fff"
                 size={40}
-                onPress={() => navigation.navigate("GenerateScreen", { type: 'qr', data: 'fgjehn' })}
+                onPress={() => navigation.navigate("CreateScreen")}
             />
-            {console.log(scanned ? "PUTEM" : "NU PUTEM")}
+            <IconButton
+                style={{ position: "absolute", zIndex: 1, bottom: 45, left: 30 }}
+                iconName="skull"
+                color="#fff"
+                size={40}
+                onPress={() => navigation.navigate("GenerateScreen", { type: 'qr', data: 'fgjehn' })}//!!!!!!!!!!!!!
+            />
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}

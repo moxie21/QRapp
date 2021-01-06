@@ -161,7 +161,7 @@ export default function ViewOqHistory({ navigation, data }) {
                             ]}
                         >
                             <MaterialIcons
-                                name="content-copy"
+                                name="open-in-browser"
                                 size={28}
                                 color="black"
                             />
@@ -181,7 +181,7 @@ export default function ViewOqHistory({ navigation, data }) {
                             <MaterialIcons
                                 name="share"
                                 size={28}
-                                color="#00008B"
+                                color="black"
                             />
                         </TouchableOpacity>
                         <TouchableOpacity

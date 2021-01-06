@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text, Image } from 'react-native';
-
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import useStatusBar from '../hooks/useStatusBar';
 
 export default function WelcomeScreen({ navigation }) {
@@ -9,16 +9,20 @@ export default function WelcomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image source={require('../assets/icon.png')} style={styles.logo} />
-        <Text>Welcome</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('LoginScreen')}>
-          <Text>Log in</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-            onPress={() => navigation.navigate('RegisterScreen')}>
-            <Text>Register</Text>
-        </TouchableOpacity>
+		<MaterialCommunityIcons style={{marginTop: 80}} name="qrcode-scan" size={200} color="white" />
+        <Text style={styles.title}>Quick Scan</Text>
+        <View style={{top: 170, width: '100%',}}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('LoginScreen')}>
+            <Text style={styles.buttonTitle}>Log in</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+              style={styles.button}
+              onPress={() => navigation.navigate('RegisterScreen')}>
+              <Text style={styles.buttonTitle}>Register</Text>
+          </TouchableOpacity>
+        </View>    
       </View>
     </View>
   );
@@ -29,19 +33,31 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
+    backgroundColor: "#2F2F31",
+	flexDirection: "column",
   },
   logoContainer: {
     position: 'absolute',
     top: 60,
-    alignItems: 'center'
+    alignItems: 'center',
   },
-  logo: {
-    width: 125,
-    height: 125
+  title: {
+    color: "#fff",
+	fontSize: 25,
+	marginTop: 50,
+    fontFamily: "Lato_400Regular",
   },
-  buttonContainer: {
-    position: 'absolute',
-    top: 100,
-    alignItems: 'center'
+  button: {
+	backgroundColor: "#E0E0E5",
+    marginTop: 20,
+    height: 48,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonTitle: {
+    color: "#000000",
+    fontSize: 21,
+    fontFamily: "Lato_400Regular",
   },
 });

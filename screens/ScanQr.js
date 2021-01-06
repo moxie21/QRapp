@@ -74,7 +74,7 @@ export default function ScanQr({ navigation }) {
                 iconName="skull"
                 color="#fff"
                 size={40}
-                onPress={() => navigation.navigate("GenerateScreen", { type: 'qr', data: 'fgjehn' })}//!!!!!!!!!!!!!
+                onPress={() => navigation.navigate("GenerateScreen", { type: 'qr', data: 'https://cv.upt.ro/login/index.php' })}//!test
             />
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}

@@ -125,7 +125,7 @@ export default function GenerateQr({ navigation, scannedData }) {
                 style={styles.container} 
                 contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
             >
-                <SafeAreaView style={{ flex: 1, width: '100%', alignItems: 'center' }}>
+                <SafeAreaView style={{ flex: 1, width: '100%', alignItems: 'center',paddingBottom: 100 }}>
                     <View style={styles.qrWrapper}>
                         <QRCode value={value.length > 0 ? value : "QR"} size={150} />
                     </View>
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     },
     tagsWrapper: {
         flex: 1,
-        width: '90%'
+        width: '90%',
     },
     qrWrapper: {
         justifyContent: 'center',

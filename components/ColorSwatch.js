@@ -12,13 +12,13 @@ const styles = StyleSheet.create({
         height: 50,
         width: 50,
         margin: 5,
-        borderWidth: 1,
+        borderWidth: 3,
         borderRadius: 7,
         borderColor: '#e4e9f2',
         backgroundColor: '#fff',
-        shadowColor: 'grey',
-        shadowOffset: {width:3,height: 3},
-        shadowOpacity: 1,
-        shadowRadius: 6,
+        // shadowColor: 'grey',
+        // shadowOffset: {width:3,height: 3},
+        // shadowOpacity: 1,
+        // shadowRadius: 6,
     }
 });

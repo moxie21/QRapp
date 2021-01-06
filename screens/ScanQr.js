@@ -69,13 +69,13 @@ export default function ScanQr({ navigation }) {
                 size={40}
                 onPress={() => navigation.navigate("CreateScreen")}
             />
-            {/* <IconButton
+            <IconButton
                 style={{ position: "absolute", zIndex: 1, bottom: 45, left: 30 }}
                 iconName="skull"
                 color="#fff"
                 size={40}
                 onPress={() => navigation.navigate("GenerateScreen", { type: 'qr', data: 'https://cv.upt.ro/login/index.php' })}//!test
-            /> */}
+            />
             <BarCodeScanner
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}

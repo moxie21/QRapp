@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "qr",
-    "slug": "qr",
+    "name": "QR QuickScan",
+    "slug": "QR QuickScan",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/QR.png",
     "splash": {
       "image": "./assets/splash1.png",
       "resizeMode": "cover",
@@ -17,11 +17,12 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mar.quickscan"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/QR.png",
         "backgroundColor": "#FFFFFF"
       }
     },

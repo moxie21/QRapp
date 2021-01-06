@@ -155,15 +155,29 @@ export default function Settings({navigation}) {
 	}
 
 	const clearHistory = async () => {
-		alert('clear history')
-		const scansRef = userRef.collection('scans');
-		const query = scansRef.limit(10);
-		const snapshot = await query.get();
+		Alert.alert(
+            'Are you shure you want to delete the scan history?',
+            '',
+            [
+              {
+                text: "Cancel",
+                style: "cancel"
+              },
+              { text: "OK", 
+                onPress: async () => { 
+                    const scansRef = userRef.collection('scans');
+					const query = scansRef.limit(10);
+					const snapshot = await query.get();
+					
+					snapshot.docs.forEach((doc) => {
+						doc.ref.delete();
+					});
+                } 
+              }
+            ],
+            { cancelable: false }
+          );
 		
-		snapshot.docs.forEach((doc) => {
-			doc.ref.delete();
-		});
-
 	}
 
 	const renderItem = ({ item }) => <Item {...{ item, openEditView, userRef }} />
